@@ -156,5 +156,47 @@ DB_TOOLS = [
                 "required": ["query"]
             }
         }
-    }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "compare_models",
+            "description": "Compares two appliance models and provides their differences based on available specifications, brand, and type. Use this when the user explicitly asks to compare two models (e.g., 'What's the difference between model X and model Y?', 'Compare model A and B').",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "model_number_1": {
+                        "type": "string",
+                        "description": "The model number of the first appliance to compare (e.g., 'GFSS2HCYCSS')."
+                    },
+                    "model_number_2": {
+                        "type": "string",
+                        "description": "The model number of the second appliance to compare (e.g., 'LFX28968ST')."
+                    }
+                },
+                "required": ["model_number_1", "model_number_2"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "compare_parts",
+            "description": "Compares two appliance parts and provides their differences based on available details like name, description, price, and availability. Use this when the user explicitly asks to compare two parts (e.g., 'What's the difference between part X and part Y?', 'Compare part A and B').",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "part_number_1": {
+                        "type": "string",
+                        "description": "The PartSelect number of the first part to compare (e.g., 'PS11752778')."
+                    },
+                    "part_number_2": {
+                        "type": "string",
+                        "description": "The PartSelect number of the second part to compare (e.g., 'PS429871')."
+                    }
+                },
+                "required": ["part_number_1", "part_number_2"]
+            }
+        }
+    },
 ]
