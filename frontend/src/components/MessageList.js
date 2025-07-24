@@ -1,8 +1,7 @@
 // frontend/src/components/MessageList.js
-import React, { forwardRef } from 'react'; // Import forwardRef
+import React, { forwardRef } from 'react';
 import Message from './Message';
 
-// Use forwardRef to allow parent to pass a ref to this component's DOM element
 const MessageList = forwardRef(({ messages }, ref) => {
   return (
     <div className="message-list" ref={ref}> {/* Assign ref here */}

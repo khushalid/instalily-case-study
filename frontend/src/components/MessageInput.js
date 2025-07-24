@@ -1,4 +1,4 @@
-// frontend/src/components/MessageInput.js (Example, adjust to your template)
+// frontend/src/components/MessageInput.js
 import React, { useState } from 'react';
 
 function MessageInput({ onSendMessage }) { // onSendMessage prop will be a function to call the API
