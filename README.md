@@ -44,7 +44,7 @@ Before you begin, ensure you have the following installed:
 #### 1. Clone the Repository
 
 ```bash
-git clone [https://github.com/your-username/partselect-chat-agent.git](https://github.com/your-username/partselect-chat-agent.git) # Replace with your repo URL
+git clone [https://github.com/khushalid/partselect-chat-agent.git](https://github.com/khushalid/partselect-chat-agent.git) # Replace with your repo URL
 cd partselect-chat-agent
 ````
 
@@ -105,9 +105,6 @@ PG_DB_USER="partselect_user"
 PG_DB_PASSWORD="your_secure_db_password" # Set a strong password here
 PG_DB_HOST="localhost"
 PG_DB_PORT="5432" # Default PostgreSQL port
-
-# --- Scraper & Embedding Settings ---
-EMBEDDING_API_DELAY_SECONDS=0.5 # Delay between API calls for embedding, to prevent rate limits
 ```
 
 **Replace placeholder values** (`sk-YOUR_DEEPSEEK_API_KEY_HERE`, `sk-YOUR_OPENAI_API_KEY_HERE`, `your_secure_db_password`) with your actual keys and chosen password.
@@ -296,6 +293,27 @@ You can now interact with the chatbot by typing messages in the input field. Try
 
 ## 🐛 Troubleshooting
 
+  * **`403 Forbidden` during scraping (`scripts/scraper.py`) or web search (`app/services/web_search.py`):**
+    * **Symptom:** You might see `Error fetching ...: 403 Client Error: Forbidden` or `Network or HTTP error ... 403 Forbidden`.
+    * **Cause:** Websites often block automated requests that don't look like they're coming from a standard web browser. This is typically due to a detected `User-Agent` string or missing other browser-like HTTP headers.
+    * **Solution:**
+        1.  **Get Your Browser's User-Agent:**
+            * Open your web browser (Chrome, Firefox, Edge, Safari).
+            * Search Google for "my user agent" or visit a site like [https://www.whatismybrowser.com/detect/what-is-my-user-agent](https://www.whatismybrowser.com/detect/what-is-my-user-agent).
+            * **Copy the entire string** displayed as your "User Agent." This will be a long string containing browser and OS details.
+        2.  **Update `HEADERS` in Scraper Files:**
+            * Open `backend/scripts/scraper.py` and locate the `HEADERS` dictionary.
+            * Open `backend/app/services/web_search.py` and locate the `HEADERS` dictionary.
+            * **Replace the `User-Agent` value** in both files with the string you copied from your browser.
+                ```python
+                # Example:
+                HEADERS = {
+                    'User-Agent': 'PASTE_YOUR_COPIED_USER_AGENT_STRING_HERE',
+                    # ... other headers ...
+                }
+                ```
+        3.  **Consider Other Headers (Already in Code):** The provided code already includes other common browser headers (`Accept`, `Accept-Language`, etc.). These also help mimic a real browser. If the issue persists, ensure these are present as shown in the provided code snippets.
+        4.  **Increase Delay:** If the `403` error still occurs, you might be hitting rate limits. Increase the `delay` argument in `fetch_page` within `backend/scripts/scraper.py` (e.g., from `3` to `5` or `10` seconds). Similarly, `EMBEDDING_API_DELAY_SECONDS` in `.env` can be increased for embedding processes if needed.
   * **`403 Forbidden` during scraping/web search:**
       * Update `User-Agent` in `backend/scripts/scraper.py` and `backend/app/services/web_search.py` with your current browser's user agent.
       * Increase `time.sleep()` delays in `scraper.py`, `embed_data.py`, and `web_search.py`.
