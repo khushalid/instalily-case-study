@@ -1,0 +1,186 @@
+/* frontend/src/App.css */
+
+/* General Body Styling */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #eef2f6; /* Very light blue-gray background for the whole page */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  color: #333; /* Default text color */
+}
+
+.App {
+  background-color: #ffffff;
+  border-radius: 12px; /* Slightly more rounded */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); /* Stronger, more defined shadow */
+  width: 100%;
+  max-width: 550px; /* Slightly wider chat widget */
+  height: 85vh; /* Taller chat widget */
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  border: 1px solid #e0e0e0; /* Subtle border around the app */
+}
+
+/* Header Styling */
+.App-header {
+  background-color: #0d47a1; /* Deep, professional blue */
+  color: #ffffff;
+  padding: 18px 25px; /* More padding */
+  text-align: center;
+  font-size: 1.3em;
+  font-weight: 600; /* Slightly bolder */
+  border-top-left-radius: 11px; /* Match App radius -1px */
+  border-top-right-radius: 11px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.8px;
+}
+
+.App-header h1 {
+  margin: 0;
+  font-size: 1.6em;
+}
+
+/* Chat Container */
+.chat-container {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 15px 20px;
+  overflow: visible; /* Crucial for scrolling */
+  position: relative;
+}
+
+/* Message List */
+.message-list {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-right: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; /* Stick messages to bottom */
+}
+
+/* Scrollbar styling */
+.message-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.message-list::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 10px;
+}
+
+.message-list::-webkit-scrollbar-thumb {
+  background: #bdbdbd; /* Lighter gray scrollbar */
+  border-radius: 10px;
+}
+
+.message-list::-webkit-scrollbar-thumb:hover {
+  background: #9e9e9e;
+}
+
+/* Typing Indicator */
+.typing-indicator {
+  padding: 8px 12px;
+  font-size: 0.9em;
+  color: #757575; /* Softer gray */
+  text-align: center;
+  margin-top: 5px;
+  font-style: italic;
+  animation: pulse 1.5s infinite ease-in-out; /* Simple pulse animation */
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+/* Input Form */
+form {
+  display: flex;
+  padding: 15px 20px 15px; /* Consistent padding */
+  border-top: 1px solid #e0e0e0;
+  gap: 12px; /* More space between input and button */
+  background-color: #ffffff;
+}
+
+form input[type="text"] {
+  flex-grow: 1;
+  padding: 14px 20px; /* More padding for input */
+  border: 1px solid #c5d0da; /* Softer border */
+  border-radius: 28px; /* More rounded */
+  font-size: 1.05em; /* Slightly larger font */
+  outline: none;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05); /* Subtle inner shadow */
+}
+
+form input[type="text"]:focus {
+  border-color: #0d47a1; /* Deep blue highlight on focus */
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08), 0 0 0 3px rgba(13, 71, 161, 0.2); /* Focus ring */
+}
+
+form button[type="submit"] {
+  padding: 14px 25px; /* More padding */
+  background-color: #4caf50; /* A pleasant green */
+  color: white;
+  border: none;
+  border-radius: 28px;
+  cursor: pointer;
+  font-size: 1.05em;
+  font-weight: bold;
+  transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out, box-shadow 0.2s ease-in-out;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15); /* More prominent shadow for buttons */
+}
+
+form button[type="submit"]:hover {
+  background-color: #43a047; /* Darker green on hover */
+  transform: translateY(-2px); /* More noticeable lift */
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+form button[type="submit"]:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Basic Responsiveness */
+@media (max-width: 600px) {
+  .App {
+    width: 100%;
+    height: 100vh; /* Full screen on mobile */
+    border-radius: 0;
+  }
+
+  .App-header {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+
+  .chat-container {
+    padding: 10px; /* Less padding on small screens */
+  }
+
+  form {
+    padding: 10px;
+    flex-wrap: wrap; /* Allow input/button to wrap if needed */
+  }
+
+  form input[type="text"] {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+
+  form button[type="submit"] {
+    width: 100%;
+  }
+}
