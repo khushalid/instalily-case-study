@@ -465,3 +465,133 @@ def semantic_search(query: str, appliance_type: str = None, search_limit: int = 
         return {"found_semantic": False, "message": "An unexpected error occurred during semantic search."}
     finally:
         if conn: cursor.close(); conn.close()
+
+# --- Helper to retrieve a single model's details ---
+def _get_model_details(model_number: str) -> dict | None:
+    """
+    Internal helper to retrieve detailed information about a single model.
+    Returns raw database columns as a dictionary.
+    """
+    conn = None
+    try:
+        conn = get_db_connection()
+        if not conn: return None
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT
+                m.id, m.model_number, m.description, m.model_page_url,
+                at.name as appliance_type, b.name as brand_name
+            FROM Model m
+            LEFT JOIN ApplianceType at ON m.appliance_type_id = at.id
+            LEFT JOIN Brand b ON m.brand_id = b.id
+            WHERE m.model_number = %s;
+            """,
+            (model_number.upper(),)
+        )
+        result = cursor.fetchone()
+        if result:
+            columns = [desc[0] for desc in cursor.description]
+            return dict(zip(columns, result))
+        return None
+    except psycopg2.Error as e:
+        print(f"Error in _get_model_details for {model_number}: {e}")
+        return None
+    finally:
+        if conn: cursor.close(); conn.close()
+
+
+# --- NEW: compare_models Tool Function ---
+def compare_models(model_number_1: str, model_number_2: str) -> dict:
+    """
+    Compares two appliance models based on available details (description, brand, type).
+
+    Args:
+        model_number_1 (str): The model number of the first appliance.
+        model_number_2 (str): The model number of the second appliance.
+
+    Returns:
+        dict: A dictionary containing comparison results for both models.
+    """
+    model1_details = _get_model_details(model_number_1)
+    model2_details = _get_model_details(model_number_2)
+
+    comparison_results = {
+        "status": "success",
+        "model1": {"number": model_number_1, "found": False, "details": None},
+        "model2": {"number": model_number_2, "found": False, "details": None},
+        "message": ""
+    }
+
+    if model1_details:
+        comparison_results["model1"]["found"] = True
+        comparison_results["model1"]["details"] = {
+            "model_number": model1_details.get("model_number"),
+            "description": model1_details.get("description"),
+            "appliance_type": model1_details.get("appliance_type"),
+            "brand_name": model1_details.get("brand_name"),
+            "model_page_url": model1_details.get("model_page_url")
+        }
+    else:
+        comparison_results["model1"]["message"] = f"Model {model_number_1} not found in database."
+        comparison_results["model1"]["suggested_web_search_url"] = construct_partselect_search_url(model_number_1)
+
+    if model2_details:
+        comparison_results["model2"]["found"] = True
+        comparison_results["model2"]["details"] = {
+            "model_number": model2_details.get("model_number"),
+            "description": model2_details.get("description"),
+            "appliance_type": model2_details.get("appliance_type"),
+            "brand_name": model2_details.get("brand_name"),
+            "model_page_url": model2_details.get("model_page_url")
+        }
+    else:
+        comparison_results["model2"]["message"] = f"Model {model_number_2} not found in database."
+        comparison_results["model2"]["suggested_web_search_url"] = construct_partselect_search_url(model_number_2)
+
+    if comparison_results["model1"]["found"] and comparison_results["model2"]["found"]:
+        comparison_results["message"] = f"Comparison details for {model_number_1} and {model_number_2}:"
+    elif comparison_results["model1"]["found"]:
+        comparison_results["message"] = f"Found details for {model_number_1}, but {model_number_2} not found."
+    elif comparison_results["model2"]["found"]:
+        comparison_results["message"] = f"Found details for {model_number_2}, but {model_number_1} not found."
+    else:
+        comparison_results["message"] = f"Neither model {model_number_1} nor {model_number_2} found in database."
+        comparison_results["suggested_web_search_url"] = construct_partselect_search_url(f"{model_number_1} vs {model_number_2}")
+        comparison_results["status"] = "not_found_all"
+
+    return comparison_results
+
+def compare_parts(part_number_1: str, part_number_2: str) -> dict:
+    """
+    Compares two appliance parts based on available details (name, description, price, availability, etc.).
+
+    Args:
+        part_number_1 (str): The PartSelect number of the first part.
+        part_number_2 (str): The PartSelect number of the second part.
+
+    Returns:
+        dict: A dictionary containing comparison results for both parts.
+    """
+    part1_response = get_part_details(part_number_1) # Use existing tool
+    part2_response = get_part_details(part_number_2) # Use existing tool
+
+    comparison_results = {
+        "status": "success",
+        "part1": {"number": part_number_1, "found": part1_response.get("found"), "details": part1_response.get("details", {})},
+        "part2": {"number": part_number_2, "found": part2_response.get("found"), "details": part2_response.get("details", {})},
+        "message": ""
+    }
+
+    if part1_response.get("found") and part2_response.get("found"):
+        comparison_results["message"] = f"Comparison details for part {part_number_1} and part {part_number_2}:"
+    elif part1_response.get("found"):
+        comparison_results["message"] = f"Found details for part {part_number_1}, but part {part_number_2} not found. You can try searching for it on the website: {part2_response.get('suggested_web_search_url')}"
+    elif part2_response.get("found"):
+        comparison_results["message"] = f"Found details for part {part_number_2}, but part {part_number_1} not found. You can try searching for it on the website: {part1_response.get('suggested_web_search_url')}"
+    else:
+        comparison_results["message"] = f"Neither part {part_number_1} nor part {part_number_2} found in our database."
+        comparison_results["suggested_web_search_url"] = construct_partselect_search_url(f"{part_number_1} vs {part_number_2}")
+        comparison_results["status"] = "not_found_all"
+
+    return comparison_results

@@ -15,7 +15,9 @@ from app.services.db_service import (
     get_installation_guide_by_part,
     get_installation_guide_by_model,
     troubleshoot_appliance,
-    semantic_search
+    semantic_search,
+    compare_models,
+    compare_parts
 )
 from app.services.web_search import perform_partselect_web_search
 from app.core.tools import DB_TOOLS
@@ -32,6 +34,8 @@ available_functions = {
     "troubleshoot_appliance": troubleshoot_appliance,
     "semantic_search": semantic_search,
     "perform_partselect_web_search": perform_partselect_web_search,
+    "compare_models": compare_models,
+    "compare_parts": compare_parts
 }
 
 @router.post("/chat")
@@ -47,25 +51,28 @@ async def chat_endpoint(request: Request):
         if not conversation_history_from_frontend:
             raise HTTPException(status_code=400, detail="Conversation history cannot be empty.")
 
-        # Define the system message content for the LLM's persona and instructions
-        # Removed redundant comments for conciseness
+        # Define the system message content for the LLM's persona and instruction
         system_message_content = (
             "You are a helpful chat agent for the PartSelect e-commerce website. "
             "Your primary function is to provide product information and assist with customer transactions "
-            "ONLY for Refrigerator and Dishwasher parts and models. "
+            "**ONLY for Refrigerator and Dishwasher parts and models**. "
             "You have access to specialized tools to look up part details, check compatibility, "
-            "retrieve installation guides, troubleshoot appliance issues, perform semantic searches on your database, and search the PartSelect website directly. "
-            "Always use the provided tools when relevant to answer a user's question. "
+            "retrieve installation guides, troubleshoot appliance issues, perform semantic searches on your database, "
+            "compare appliance models, **compare appliance parts,** and search the PartSelect website directly. " # NEW Instruction
+            "**Always use the provided tools when relevant to answer a user's question.** "
             "Do NOT answer questions outside the scope of Refrigerator and Dishwasher parts or general knowledge. "
             "If a question is outside your scope, politely state that you can only assist with Refrigerator and Dishwasher parts. "
             "When providing part numbers or model numbers, mention them explicitly."
             "When asked how to fix an issue, use the 'get_installation_guide' or 'troubleshoot_appliance' tool as appropriate."
             "If a user asks for installation steps for a specific part number, use the 'get_installation_guide' tool with the part number."
             "If a user asks if a part is compatible with a model, use the 'check_compatibility' tool."
-            "PRIORITIZE TOOL USE IN THIS ORDER: "
-            "1. Exact-match database lookups: (`get_part_details`, `check_compatibility`, `get_installation_guide`, `troubleshoot_appliance`) if the query contains specific IDs or clear intent. "
-            "2. Semantic database search: (`semantic_search`) if the query is more natural language, vague, or the exact-match tools fail to find specific results. Use this for symptoms, descriptions, or general part types. "
-            "3. External website search: (`perform_partselect_web_search`) if semantic search also fails to provide concrete answers or if the user explicitly asks to 'search the website'. "
+            "If the user asks to compare two models (e.g., 'compare X and Y', 'difference between X and Y'), use the `compare_models` tool."
+            "**If the user asks to compare two parts (e.g., 'compare part X and part Y', 'difference between part A and B'), use the `compare_parts` tool.**" # NEW Instruction
+            "**PRIORITIZE TOOL USE IN THIS ORDER:** "
+            "1. **Direct comparison (Models or Parts):** (`compare_models`, `compare_parts`) if the intent is clearly comparing two entities. " # UPDATED Priority
+            "2. **Exact-match database lookups:** (`get_part_details`, `check_compatibility`, `get_installation_guide`, `troubleshoot_appliance`) if the query contains specific IDs or clear intent. "
+            "3. **Semantic database search:** (`semantic_search`) if the query is more natural language, vague, or the exact-match tools fail to find specific results. Use this for symptoms, descriptions, or general part types. "
+            "4. **External website search:** (`perform_partselect_web_search`) if semantic search also fails to provide concrete answers or if the user explicitly asks to 'search the website'. "
             "Maintain a friendly and professional tone. Respond concisely and directly."
             "If you retrieve detailed information, summarize it for the user."
             "If a guide is found, provide a direct link to it."
@@ -73,11 +80,12 @@ async def chat_endpoint(request: Request):
             "you MUST try the next prioritized tool. If all internal tools fail, then use 'perform_partselect_web_search'. "
             "When you use `perform_partselect_web_search`, summarize its results for the user and provide direct links. "
             "If after all tools, no answer is found, state that clearly and offer general help."
-            "IMPORTANT: Format your responses using **Markdown** for clarity. "
+            "**IMPORTANT:** Format your responses using **Markdown** for clarity. "
             "Use headings (`##`), bullet points (`* item`), bold text (`**text**`), and newlines (`\n\n`) to break up information. "
             "Ensure lists are properly formatted with bullet points or numbered lists. "
             "Always include newlines between paragraphs and distinct sections for readability."
         )
+
 
         # Initialize messages list with the system prompt
         messages = [{"role": "system", "content": system_message_content}]

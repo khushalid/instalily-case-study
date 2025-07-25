@@ -14,13 +14,7 @@ function Message({ sender, text }) {
         <ReactMarkdown
           remarkPlugins={[remarkGfm]} // Use remark-gfm for tables, strikethrough, etc.
           components={{
-            // Optionally, you can custom render HTML elements if needed
-            // For example, to control <a> tags:
             a: ({node, ...props}) => <a {...props} target="_blank" rel="noopener noreferrer" style={{ wordBreak: 'break-all' }} />,
-            // You can also customize h1, h2, ul, li, p, etc. here if the CSS isn't enough
-            // For instance, to ensure specific classes:
-            // p: ({node, ...props}) => <p className="markdown-paragraph" {...props} />,
-            // ul: ({node, ...props}) => <ul className="markdown-list" {...props} />,
           }}
         >
           {text}

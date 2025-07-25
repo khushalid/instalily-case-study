@@ -32,12 +32,6 @@ function App() {
     setIsTyping(true); // Show typing indicator
 
     try {
-      // Prepare messages for the backend.
-      // We need to map our frontend message format to Deepseek's expected format.
-      // Deepseek expects: {"role": "user", "content": "..."} or {"role": "assistant", "content": "..."}
-      // For tool calls, it expects {"role": "assistant", "tool_calls": [...]} and {"role": "tool", "tool_call_id": "...", "content": "..."}
-      // For now, we'll send a simplified history, only content.
-      // Backend will reconstruct the full history including system prompt and tool interactions.
       const conversationHistory = messages.map(msg => ({
         role: msg.sender === 'user' ? 'user' : 'assistant',
         content: msg.text // Only send content for now, backend will handle tool_calls
